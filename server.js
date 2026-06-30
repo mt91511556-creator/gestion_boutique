@@ -816,9 +816,9 @@ app.post('/api/auth/inscription-admin', async (req, res) => {
 
     // --- CONFIGURATION DE L'ENVOYEUR (GMAIL) ---
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, 
+      service: 'gmail',
+      port: 587,
+      secure: false, 
       auth: {
         user: 'mt91511556@gmail.com',
         pass: 'kwqerdnpnyodecfz'
@@ -1303,9 +1303,9 @@ app.post('/api/backup-manuel', async (req, res) => {
 
     // 1. CONFIGURATION DU TRANSPORTER MAIL
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, 
+      service: 'gmail',
+      port: 587,
+      secure: false, 
       auth: {
         user: 'mt91511556@gmail.com',
         pass: 'kwqerdnpnyodecfz'
