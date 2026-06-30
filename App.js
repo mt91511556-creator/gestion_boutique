@@ -2130,16 +2130,13 @@ const supprimerDuPanier = (id) => {
   const total = panier.reduce((sum, item) => sum + (item.prix_vente * item.qte), 0);
 
 const imprimerTicket = (numeroTicket, articles, total, montantRecu, monnaie, mode, vendeurNom) => {
-    // ÉTAPE SÉCURISÉE : On demande d'abord au navigateur d'ouvrir la page DU TICKET directement.
-    // Les mobiles acceptent TOUJOURS cela car c'est une navigation propre, pas une pop-up fantôme.
-    const fenetre = window.open('about:blank', '_blank');
+    // Ouverture propre compatible avec les navigateurs mobiles
+    const fenetre = window.open('', '_blank', 'width=300,height=600');
     
-    if (!fenetre) {
-        alert("Le navigateur bloque encore l'ouverture. Veuillez autoriser les pop-ups pour ce site.");
-        return;
-    }
-
+    // Formatage du numéro de ticket (ex: 001)
     const numeroFormate = String(numeroTicket).padStart(3, '0');
+
+    // RÉCUPÉRATION DYNAMIQUE DES INFOS MODIFIÉES
     let boutiqueNom = 'TICKET DE CAISSE';
     let boutiqueAdresse = '';
     let boutiqueTel = '';
@@ -2147,6 +2144,7 @@ const imprimerTicket = (numeroTicket, articles, total, montantRecu, monnaie, mod
     let logoHtml = '';
 
     const configurationActive = typeof configTicketGlobal !== 'undefined' ? configTicketGlobal : null;
+
     if (configurationActive) {
       if (configurationActive.nom_boutique) boutiqueNom = configurationActive.nom_boutique;
       if (configurationActive.adresse) boutiqueAdresse = `<p style="margin:2px 0; font-size:12px; color:#555;">${configurationActive.adresse}</p>`;
@@ -2157,27 +2155,37 @@ const imprimerTicket = (numeroTicket, articles, total, montantRecu, monnaie, mod
       }
     }
 
+    // --- LOGIQUE SÉCURISÉE POUR LE CRÉDIT ---
+    // Accepte "Crédit", "credit", "CREDIT" ou si la chaîne contient "cred"
     const estUnCredit = mode && (
       mode.toLowerCase().includes('credit') || 
       mode.toLowerCase().includes('crédit') || 
       mode.toLowerCase().includes('cred')
     );
     
+    // Convertir proprement les montants pour éviter les erreurs de calcul
     const totalNum = parseFloat(total) || 0;
     const avanceNum = parseFloat(montantRecu) || 0;
+    
+    // Le reste à payer est la différence mathématique
     const resteAPayer = totalNum - avanceNum;
 
-    // On injecte le code directement dans la page qui vient de s'ouvrir proprement
+    // Initialisation du document de la fenêtre avant l'écriture
+    fenetre.document.open();
+
     fenetre.document.write(`
       <html>
         <head>
           <title>Ticket ${numeroFormate}</title>
           <style>
-            @page { size: auto; margin: 0mm; }
+            @page {
+              size: auto;
+              margin: 0mm;
+            }
             body {
               font-family: 'Courier New', Courier, monospace;
-              padding: 8px;
-              width: 280px;
+              padding: 8px; /* Marges réduites pour économiser le papier */
+              width: 280px; /* S'adapte parfaitement aux rouleaux de 58mm et 80mm */
               margin: 0;
               background-color: #fff;
               color: #000;
@@ -2203,6 +2211,7 @@ const imprimerTicket = (numeroTicket, articles, total, montantRecu, monnaie, mod
             </p>
           </div>
           <hr>
+          
           <table>
             ${articles.map(a => `
               <tr>
@@ -2212,35 +2221,52 @@ const imprimerTicket = (numeroTicket, articles, total, montantRecu, monnaie, mod
             `).join('')}
           </table>
           <hr>
+          
           <div class="flex-space bold" style="font-size:14px; margin: 4px 0;">
             <span>TOTAL :</span>
             <span>${totalNum.toLocaleString('fr-FR')} FCFA</span>
           </div>
+          
           <div style="margin-top:6px; font-size:12px; line-height: 1.3;">
             <div class="flex-space">
               <span>Mode de paiement :</span>
               <span class="bold">${mode || 'Espèce'}</span>
             </div>
+
             ${estUnCredit ? `
-              <div class="flex-space"><span>Avance :</span><span>${avanceNum.toLocaleString('fr-FR')} F</span></div>
-              <div class="flex-space bold" style="border-top: 1px dashed #000; padding-top: 4px; margin-top: 4px;">
-                <span>Reste à payer :</span><span>${resteAPayer.toLocaleString('fr-FR')} F</span>
+              <div class="flex-space">
+                <span>Avance :</span>
+                <span>${avanceNum.toLocaleString('fr-FR')} F</span>
               </div>
+              
+              <div class="flex-space bold" style="border-top: 1px dashed #000; padding-top: 4px; margin-top: 4px;">
+                <span>Reste à payer :</span>
+                <span>${resteAPayer.toLocaleString('fr-FR')} F</span>
+              </div>
+              
             ` : `
-              <div class="flex-space"><span>Montant reçu :</span><span>${avanceNum.toLocaleString('fr-FR')} F</span></div>
-              <div class="flex-space bold"><span>Monnaie rendue :</span><span>${(parseFloat(monnaie) || 0).toLocaleString('fr-FR')} F</span></div>
+              <div class="flex-space">
+                <span>Montant reçu :</span>
+                <span>${avanceNum.toLocaleString('fr-FR')} F</span>
+              </div>
+              
+              <div class="flex-space bold">
+                <span>Monnaie rendue :</span>
+                <span>${(parseFloat(monnaie) || 0).toLocaleString('fr-FR')} F</span>
+              </div>
             `}
           </div>
+
           <hr>
           <p class="text-center" style="font-size:11px; margin-top:6px; font-style: italic;">${messagePiedPage}</p>
           
           <script>
-            // Petite astuce pour forcer l'impression sur mobile après le chargement
-            document.addEventListener('DOMContentLoaded', function() {
+            window.onload = function() {
               setTimeout(function() {
                 window.print();
-              }, 500);
-            });
+                window.close();
+              }, 300);
+            };
           </script>
         </body>
       </html>
