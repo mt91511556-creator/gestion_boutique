@@ -2136,12 +2136,18 @@ app.get('/api/stats', verifierConnexion, async (req, res) => {
 
 app.get('/api/stats/mensuel', verifierConnexion, async (req, res) => {
   const adminId = req.user.id;
-  try {
-    await pool.query("SET lc_time = 'fr_FR.UTF-8'");
+  
+  // Tableau de correspondance pour gérer le Français et l'Anglais facilement
+  const nomsMois = {
+    fr: ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
+    en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+  };
 
+  try {
+    // 1. On a retiré le SET lc_time qui faisait planter Render !
+    
     const result = await pool.query(`
       SELECT 
-        TO_CHAR(date_vente, 'Month YYYY') as mois_nom,
         EXTRACT(MONTH FROM date_vente) as mois_num,
         EXTRACT(YEAR FROM date_vente) as annee,
         SUM(prix_total) as ca,
@@ -2149,10 +2155,29 @@ app.get('/api/stats/mensuel', verifierConnexion, async (req, res) => {
       FROM ventes
       WHERE admin_id = $1 
         AND (etat IS NULL OR etat != 'annulée')
-      GROUP BY annee, mois_num, mois_nom
+      GROUP BY annee, mois_num
       ORDER BY annee DESC, mois_num DESC
     `, [adminId]);
-    res.json(result.rows);
+
+    // 2. On transforme les résultats pour ajouter le nom du mois en FR et en EN
+    const donnéesFormatées = result.rows.map(row => {
+      const indexMois = parseInt(row.mois_num) - 1; // Les tableaux JS commencent à 0
+      
+      return {
+        ...row,
+        // Renvoie par exemple "Janvier 2026"
+        mois_nom_fr: `${nomsMois.fr[indexMois]} ${row.annee}`, 
+        // Renvoie par exemple "January 2026"
+        mois_nom_en: `${nomsMois.en[indexMois]} ${row.annee}`,
+        
+        // Optionnel : On garde aussi l'ancienne clé "mois_nom" par défaut (en français) 
+        // pour éviter de casser votre Frontend si vous l'utilisiez déjà !
+        mois_nom: `${nomsMois.fr[indexMois]} ${row.annee}` 
+      };
+    });
+
+    res.json(donnéesFormatées);
+
   } catch (err) {
     console.error("Erreur stats mensuelles:", err.message);
     res.status(500).json({ error: "Erreur lors de la récupération de l'historique" });
