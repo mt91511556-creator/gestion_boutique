@@ -821,7 +821,7 @@ app.post('/api/auth/inscription-admin', async (req, res) => {
       secure: true, 
       auth: {
         user: 'mt91511556@gmail.com',
-        pass: 'vynrvuxjpnybotad'
+        pass: 'kwqerdnpnyodecfz'
       }
     });
 
@@ -1003,7 +1003,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       service: 'gmail',
       auth: {
         user: 'mt91511556@gmail.com', 
-        pass: 'vynrvuxjpnybotad' // ⚠️ Voir explication importante ci-dessous
+        pass: 'kwqerdnpnyodecfz' // ⚠️ Voir explication importante ci-dessous
       }
     });
 
@@ -1308,7 +1308,7 @@ app.post('/api/backup-manuel', async (req, res) => {
       secure: true, 
       auth: {
         user: 'mt91511556@gmail.com',
-        pass: 'vynrvuxjpnybotad'
+        pass: 'kwqerdnpnyodecfz'
       }
     });
 
@@ -2794,7 +2794,7 @@ app.post('/api/abonnement/demande-cle', async (req, res) => {
     service: 'gmail',
     auth: {
       user: 'mt91511556@gmail.com',
-      pass: 'vynrvuxjpnybotad' // Ton code d'application Google à 16 lettres
+      pass: 'kwqerdnpnyodecfz' // Ton code d'application Google à 16 lettres
     }
   });
 
