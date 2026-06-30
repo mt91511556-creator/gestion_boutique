@@ -2129,8 +2129,9 @@ const supprimerDuPanier = (id) => {
 };
   const total = panier.reduce((sum, item) => sum + (item.prix_vente * item.qte), 0);
 
-  const imprimerTicket = (numeroTicket, articles, total, montantRecu, monnaie, mode, vendeurNom) => {
-    const fenetre = window.open('', '', 'width=300,height=600');
+ const imprimerTicket = (numeroTicket, articles, total, montantRecu, monnaie, mode, vendeurNom) => {
+    // Ouverture propre compatible avec les navigateurs mobiles
+    const fenetre = window.open('', '_blank', 'width=300,height=600');
     
     // Formatage du numéro de ticket (ex: 001)
     const numeroFormate = String(numeroTicket).padStart(3, '0');
@@ -2169,9 +2170,13 @@ const supprimerDuPanier = (id) => {
     // Le reste à payer est la différence mathématique
     const resteAPayer = totalNum - avanceNum;
 
+    // Initialisation du document de la fenêtre avant l'écriture
+    fenetre.document.open();
+
     fenetre.document.write(`
       <html>
         <head>
+          <title>Ticket ${numeroFormate}</title>
           <style>
             @page {
               size: auto;
@@ -2239,7 +2244,6 @@ const supprimerDuPanier = (id) => {
                 <span>${resteAPayer.toLocaleString('fr-FR')} F</span>
               </div>
               
-            
             ` : `
               <div class="flex-space">
                 <span>Montant reçu :</span>
@@ -2258,8 +2262,10 @@ const supprimerDuPanier = (id) => {
           
           <script>
             window.onload = function() {
-              window.print();
-              window.close();
+              setTimeout(function() {
+                window.print();
+                window.close();
+              }, 300);
             };
           </script>
         </body>
@@ -2267,7 +2273,6 @@ const supprimerDuPanier = (id) => {
     `);
     fenetre.document.close();
 };
-
   const historiqueFiltre = historique.filter(v => {
     const dateVente = new Date(v.date_vente).setHours(0,0,0,0);
     const debut = dateDebut ? new Date(dateDebut).setHours(0,0,0,0) : null;
