@@ -15,11 +15,7 @@ const app = express();
 const SECRET_KEY = "91511556"; 
 
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'gestion_alimentation',
-  password: '91511556', 
-  port: 5432,
+  connectionString: process.env.DATABASE_URL
 });
 
 
