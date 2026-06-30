@@ -15,7 +15,7 @@ const app = express();
 const SECRET_KEY = "91511556"; 
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  connectionString:postgresql://gestion_boutique_mrg8_user:Ox0AbrwsOGvclO2aetiukifG9O3hsSo4@dpg-d91lldho3t8c73eairh0-a.ohio-postgres.render.com/gestion_boutique_mrg8
 });
 
 
